@@ -127,33 +127,8 @@ defmodule Mix.Tasks.Hex.Info do
   end
 
   defp print_config(name, release) do
-    app_name = release["meta"]["app"] || name
-    {:ok, version} = Hex.Version.parse(release["version"])
-    snippet =
-      format_version(version)
-      |> format_config_snippet(name, app_name)
+    snippet = Hex.Utils.format_release_config(name, release)
     Hex.Shell.info "Config: " <> snippet
-  end
-
-  defp format_config_snippet(version, name, name),
-    do: "{:#{name}, \"#{version}\"}"
-  defp format_config_snippet(version, name, app_name),
-    do: "{:#{app_name}, \"#{version}\", hex: :#{name}}"
-
-  defp format_version(%Version{major: 0, minor: minor, patch: patch, pre: []}),
-    do: "~> 0.#{minor}.#{patch}"
-  defp format_version(%Version{major: major, minor: minor, pre: []}),
-    do: "~> #{major}.#{minor}"
-  defp format_version(%Version{major: major, minor: minor, patch: patch, pre: pre}),
-    do: "~> #{major}.#{minor}.#{patch}#{format_pre(pre)}"
-
-  defp format_pre([]), do: ""
-  defp format_pre(pre) do
-    "-" <>
-      Enum.map_join(pre, ".", fn
-        int when is_integer(int) -> Integer.to_string(int)
-        string when is_binary(string) -> string
-      end)
   end
 
   defp print_list(meta, name) do
