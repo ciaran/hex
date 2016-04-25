@@ -320,13 +320,7 @@ defmodule Hex.Utils do
   end
 
   defp format_pre([]), do: ""
-  defp format_pre(pre) do
-    "-" <>
-      Enum.map_join(pre, ".", fn
-        int when is_integer(int) -> Integer.to_string(int)
-        string when is_binary(string) -> string
-      end)
-  end
+  defp format_pre(pre), do: "-" <> Enum.map_join(pre, ".", &to_string/1)
 
   defp format_config_snippet(version, name, name),
     do: "{:#{name}, \"#{version}\"}"

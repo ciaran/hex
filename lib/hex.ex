@@ -35,6 +35,27 @@ defmodule Hex do
   def elixir_version, do: unquote(System.version)
   def otp_version,    do: unquote(Hex.Utils.otp_version)
 
+  @spec config_snippet(String.t) :: {:ok, String.t} | {:error, atom}
+  def config_snippet(package) do
+    Hex.start
+    Hex.Utils.ensure_registry(cache: false)
+
+    case Hex.API.Package.get(package) do
+      {404, _, _} ->
+        {:error, :no_package}
+      {code, body, _} when code in 200..299 ->
+        case body["releases"] do
+          [release|_] ->
+            snippet = Hex.Utils.format_release_config(package, release)
+            {:ok, snippet}
+          [] ->
+            {:error, :no_releases}
+        end
+      _ ->
+        {:error, :unknown}
+    end
+  end
+
   defp start_httpc() do
     :inets.start(:httpc, profile: :hex)
     opts = [
